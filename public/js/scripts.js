@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function loadGifts() {
-    fetch("public/xml/gifts.xml")
+    fetch("xml/gifts.xml")
         .then(response => response.text())
         .then(xmlText => {
             let parser = new DOMParser();
@@ -16,11 +16,14 @@ function loadGifts() {
             Array.from(gifts).forEach(gift => {
                 let listItem = document.createElement("li");
                 listItem.textContent = gift.textContent;
-                listItem.setAttribute("data-image", "public/image/" + gift.getAttribute("image"));
+                listItem.setAttribute("data-image", "image/" + gift.getAttribute("image"));
                 giftList.appendChild(listItem);
             });
         })
-        .catch(error => console.error("Error loading XML:", error));
+        .catch(error => {
+            console.error("Error loading XML:", error);
+            alert("Failed to load the gift data. Please try again later.");
+        });
 }
 
 function startGame() {
@@ -45,7 +48,6 @@ function startGame() {
     }, 10); // Faster rotation speed
 }
 
-
 function showPopup(selectedGift) {
     let popup = document.getElementById("popup");
     let giftImage = document.getElementById("giftImage");
@@ -56,4 +58,7 @@ function showPopup(selectedGift) {
 function closePopup() {
     document.getElementById("popup").style.display = "none";
     document.getElementById("startButton").disabled = false;
+    
+    // Redirect to the camera page
+    window.location.href = "camera.html";  // Ensure the path is correct and 'camera.html' is in place
 }
