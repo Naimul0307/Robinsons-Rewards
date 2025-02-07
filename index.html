@@ -4,134 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hit and Win Game</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            color: #111010;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            text-align: center;
-            padding: 20px;
-            background: url('../background/bg-portrait.jpg') no-repeat center center/cover;
-        }
-
-        .container {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            width: 90%;
-            max-width: 700px;
-            text-align: center;
-        }
-
-        h1 {
-        font-size: 4rem;
-        margin-bottom: 20px;
-    }
-        .game-area {
-            width: 70%;
-            height: auto;
-            overflow: hidden;
-            border: 4px solid #FFF;
-            margin: auto;
-            position: relative;
-            background: #B22222;
-            border-radius: 10px;
-            padding: 5px;
-        }
-
-        .gifts {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            text-align: center;
-        }
-
-        .gifts li {
-            padding: 10px;
-            background: #FF6347;
-            margin: 5px 0;
-            font-weight: bold;
-            font-size: 2rem;
-            color: white;
-            border-radius: 5px;
-        }
-
-        .start-btn {
-            background-color: #ff6b6b;
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            font-size: 1.2rem;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            margin-top: 20px;
-        }
-
-        .start-btn:hover {
-            background-color: #ff4d4d;
-        }
-
-        .selected {
-            background: #FFFF00 !important;
-            color: #000 !important;
-        }
-
-        .popup {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 20px;
-            border: 2px solid black;
-            text-align: center;
-        }
-
-        .popup img {
-            max-width: 100px;
-        }
-
-        .disabled {
-            background-color: #ddd;
-            cursor: not-allowed;
-        }
-    </style>
+    <link rel="stylesheet" href="public/css/styles.css">
 </head>
 <body>
     <div class="container">
         <h1>Hit and Win Game</h1>
         <div class="game-area">
-            <ul class="gifts" id="giftList">
-                <li data-image="gift1.jpg">100 REWARD POINTS</li>
-                <li data-image="gift2.jpg">50 REWARD POINTS</li>
-                <li data-image="gift3.jpg">25 REWARD POINTS</li>
-                <li data-image="gift4.jpg">10 REWARD POINTS</li>
-                <li data-image="gift5.jpg">CAR SHADE</li>
-                <li data-image="gift6.jpg">COLLAPSIBLE FOOD CONTAINER</li>
-                <li data-image="gift7.jpg">LOOT BAG</li>
-                <li data-image="gift8.jpg">MAKE-UP KIT</li>
-                <li data-image="gift9.jpg">MUG</li>
-                <li data-image="gift10.jpg">PILL BOX</li>
-                <li data-image="gift11.jpg">TSHIRT-IN-CAN</li>
-                <li data-image="gift12.jpg">THERMAL BAGS</li>
-                <li data-image="gift13.jpg">TOTE BAG</li>
-                <li data-image="gift14.jpg">TOY PLUSH</li>
-                <li data-image="gift15.jpg">TRAVEL PILLOW</li>
-                <li data-image="gift16.jpg">TSUM TSUM GADGET CASE</li>
-            </ul>
+            <ul class="gifts" id="giftList"></ul>
         </div>
         <button class="start-btn" id="startButton" onclick="startGame()">Start</button>
     </div>
@@ -140,61 +19,9 @@
         <p>Congratulations! You won:</p>
         <img id="giftImage" src="" alt="Gift Image">
         <br>
-        <button onclick="closePopup()">Close</button>
+        <button class="close-btn" onclick="closePopup()">Close</button>
     </div>
 
-    <script>
-        function startGame() {
-            let items = document.querySelectorAll(".gifts li");
-            let maxIndex = items.length - 1;
-
-            // Calculate intervalTime based on the number of items
-            let intervalTime = 100 / items.length;  // faster speed with more items
-
-            let index = 0;
-            let steps = 0;
-
-            // Disable the start button to prevent further interactions
-            let startButton = document.getElementById("startButton");
-            startButton.classList.add("disabled");
-            startButton.disabled = true;
-
-            // Set up the interval to cycle through items randomly
-            let interval = setInterval(() => {
-                // Remove "selected" class from all items
-                items.forEach(item => item.classList.remove("selected"));
-                // Add the "selected" class to the current item
-                items[index].classList.add("selected");
-
-                // Increment index and loop around if necessary
-                index = (index + 1) % items.length;
-                steps++;
-
-                // Stop after a random number of steps
-                if (steps >= Math.floor(Math.random() * 50) + 30) {
-                    clearInterval(interval);
-
-                    // Randomly pick a gift after stopping
-                    let randomIndex = Math.floor(Math.random() * items.length);
-                    showPopup(items[randomIndex]);
-                }
-            }, intervalTime);  // Speed is determined by number of items
-        }
-
-        function showPopup(selectedGift) {
-            let popup = document.getElementById("popup");
-            let giftImage = document.getElementById("giftImage");
-            giftImage.src = selectedGift.getAttribute("data-image");
-            popup.style.display = "block";
-        }
-
-        function closePopup() {
-            document.getElementById("popup").style.display = "none";
-            // Re-enable the start button after closing the popup
-            let startButton = document.getElementById("startButton");
-            startButton.classList.remove("disabled");
-            startButton.disabled = false;
-        }
-    </script>
+    <script src="public/js/scripts.js"></script>
 </body>
 </html>

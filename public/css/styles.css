@@ -1,0 +1,118 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    color: #111010;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    text-align: center;
+    padding: 20px;
+    background: url('../background/bg-portrait.jpg') no-repeat center center/cover;
+    background-color: #FF6347;
+}
+
+.container {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 700px;
+    text-align: center;
+}
+
+h1 {
+    font-size: 4rem;
+    margin-bottom: 20px;
+}
+
+.game-area {
+    width: 70%;
+    height: auto;
+    overflow: hidden;
+    border: 4px solid #FFF;
+    margin: auto;
+    position: relative;
+    background: #B22222;
+    border-radius: 10px;
+    padding: 5px;
+}
+
+.gifts li {
+    padding: 10px;
+    background: #FF6347;
+    margin: 5px 0;
+    font-weight: bold;
+    font-size: 2rem;
+    color: white;
+    border-radius: 5px;
+}
+
+.start-btn {
+    background-color: #ff6b6b;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    font-size: 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 20px;
+}
+
+.start-btn:hover {
+    background-color: #ff4d4d;
+}
+
+.selected {
+    background: #FFFF00 !important;
+    color: #000 !important;
+}
+
+.popup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    width: 90%;
+    max-width: 400px;
+}
+
+.popup p {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.popup img {
+    max-width: 150px;
+    margin-bottom: 20px;
+}
+
+.close-btn {
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    font-size: 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.close-btn:hover {
+    background-color: #c0392b;
+}

@@ -1,0 +1,14 @@
+Hit-and-Win-Game/
+├── public/
+│   ├── image/          # Folder containing gift images
+│   │   ├── gift1.jpg
+│   │   ├── gift2.jpg
+│   │   ├── gift3.jpg
+│   │   └── (rest of the images)
+│   ├── xml/
+│   │   ├── gifts.xml   # XML file storing gift names and images
+│   ├── css/
+│   │   ├── styles.css  # CSS file for styling
+│   ├── js/
+│   │   ├── scripts.js  # JavaScript file for game logic
+│   ├── index.html      # Main HTML file
