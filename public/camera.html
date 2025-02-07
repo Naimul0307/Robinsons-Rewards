@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Capture</title>
+    <link rel="stylesheet" href="css/camera.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Take a Picture</h1>
+        <video id="video" autoplay></video>
+        <canvas id="canvas" style="display:none;"></canvas>
+        <img id="photo" src="" alt="Captured Image" style="display:none;">
+        <br>
+        <p id="timer"><span id="countdown">5</span></p>
+        <br>
+        <!-- Add buttons to save or retake image -->
+        <button id="saveBtn" style="display:none;" >Save Image</button>
+        <button id="retakeBtn" style="display:none;">Retake</button>
+    </div>
+
+    <script src="js/camera.js"></script>
+</body>
+</html>
