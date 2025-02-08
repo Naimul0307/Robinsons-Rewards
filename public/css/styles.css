@@ -14,7 +14,7 @@ body {
     height: 100vh;
     text-align: center;
     padding: 20px;
-    background: url('../background/bg-portrait.jpg') no-repeat center center/cover;
+    background: url('../background/background.jpg') no-repeat center center/cover;
     background-color: #FF6347;
 }
 

@@ -81,21 +81,42 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // Save Image Function (send to server)
 function saveImage(imageData) {
-    fetch("/save-image", { // Send to the '/save-image' route
+    fetch("/save-image", { 
         method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            image: imageData // Send the image as Base64 string
-        })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: imageData }) 
     })
     .then(response => response.json())
     .then(data => {
-        alert("Image saved successfully!");
+        if (data.imageUrl && data.qrCode) {
+            alert("Image saved successfully!");
+
+            // Hide buttons
+            document.getElementById("saveBtn").style.display = "none";
+            document.getElementById("retakeBtn").style.display = "none";
+
+            // Show captured image (already visible)
+            let photo = document.getElementById("photo");
+            photo.style.display = "block";
+
+            // Show QR code
+            let qrContainer = document.createElement("div");
+            qrContainer.style.textAlign = "center";
+            qrContainer.style.marginTop = "20px";
+
+            let qrCodeImage = document.createElement("img");
+            qrCodeImage.src = data.qrCode;
+            qrCodeImage.alt = "QR Code to Download Image";
+            qrCodeImage.style.width = "200px";
+
+            qrContainer.appendChild(qrCodeImage);
+            document.body.appendChild(qrContainer);
+        }
     })
     .catch(error => {
         console.error("Error saving image:", error);
         alert("Failed to save image. Please try again.");
     });
 }
+
+

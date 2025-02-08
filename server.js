@@ -1,42 +1,51 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const QRCode = require('qrcode'); // Import QR Code module
 const app = express();
 
-// Middleware to parse JSON bodies
-app.use(express.json({ limit: '10mb' })); // Increase the limit if your image size is large
-app.use(express.static(path.join(__dirname, 'public'))); // Serve static files
+app.use(express.json({ limit: '10mb' }));
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Serve index.html when accessing the root URL
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Save the captured image to the server
-app.post('/save-image', (req, res) => {
+app.post('/save-image', async (req, res) => {
     const imageData = req.body.image;
-
     if (!imageData) {
         return res.status(400).json({ error: 'No image data received' });
     }
 
-    // Decode base64 image data
     const base64Data = imageData.replace(/^data:image\/png;base64,/, '');
-    const fileName = 'capture_' + Date.now() + '.png'; // Unique file name using timestamp
+    const fileName = 'capture_' + Date.now() + '.png';
     const filePath = path.join(__dirname, 'public', 'image', 'capture', fileName);
+    const imageUrl = `http://localhost:3000/image/capture/${fileName}`; // Public image URL
 
-    // Write the image to the file system
-    fs.writeFile(filePath, base64Data, 'base64', (err) => {
+    // Save image
+    fs.writeFile(filePath, base64Data, 'base64', async (err) => {
         if (err) {
             console.error("Error saving image:", err);
             return res.status(500).json({ error: 'Failed to save the image' });
         }
 
-        res.json({ message: 'Image saved successfully', fileName });
+        // Generate QR Code for the image URL
+        try {
+            const qrCodeDataUrl = await QRCode.toDataURL(imageUrl);
+
+            res.json({ 
+                message: 'Image saved successfully', 
+                fileName, 
+                imageUrl, 
+                qrCode: qrCodeDataUrl // Send QR code data URL
+            });
+        } catch (qrError) {
+            console.error("Error generating QR code:", qrError);
+            res.status(500).json({ error: 'Failed to generate QR code' });
+        }
     });
 });
 
-// Start server
 app.listen(3000, () => {
     console.log('Server running on http://localhost:3000');
 });

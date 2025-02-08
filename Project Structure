@@ -15,3 +15,8 @@
 │   ├── scripts.js  <-- Contains the game logic
 │   └── camera.js   <-- Contains the camera logic
 └── package.json
+
+
+package install
+1.npm install express
+2.npm install qrcode
