@@ -7,12 +7,26 @@ document.addEventListener("DOMContentLoaded", function () {
     let saveBtn = document.getElementById("saveBtn");
     let retakeBtn = document.getElementById("retakeBtn");
 
+    // Check if getUserMedia is supported
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert("Camera not supported or permission denied.");
+        return;
+    }
+
     // Get user media for camera access
-    navigator.mediaDevices.getUserMedia({ video: true })
-        .then(stream => {
-            video.srcObject = stream;
-        })
-        .catch(error => console.error("Error accessing camera:", error));
+    function startCamera() {
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+                video.style.display = "block"; // Ensure video is visible
+            })
+            .catch(error => {
+                console.error("Error accessing camera:", error);
+                alert("Camera access denied. Please allow camera access.");
+            });
+    }
+
+    startCamera(); // Start the camera on page load
 
     // Start countdown timer
     let countdown = 5;
@@ -25,7 +39,7 @@ document.addEventListener("DOMContentLoaded", function () {
             clearInterval(countdownInterval); // Stop the countdown
             captureImage(); // Capture the image
         }
-    }, 1000); // Update every second
+    }, 1000);
 
     // Function to capture image after the timer finishes
     function captureImage() {
@@ -35,7 +49,7 @@ document.addEventListener("DOMContentLoaded", function () {
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
         // Convert to image and display
-        let imageData = canvas.toDataURL("image/png");
+        let imageData = canvas.toDataURL("image/jpg");
         photo.src = imageData;
         photo.style.display = "block";
         video.style.display = "none"; // Hide video after capture
@@ -50,7 +64,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Save Image Function (send to server)
     saveBtn.addEventListener("click", function () {
-        saveImage(photo.src); // Send the captured image
+        saveImage(photo.src);
     });
 
     // Retake Image Function (restart the camera)
@@ -62,10 +76,11 @@ document.addEventListener("DOMContentLoaded", function () {
         timerElement.style.display = "block"; // Show the timer again
         countdown = 5; // Reset the countdown
         countdownElement.textContent = countdown;
+        startCamera(); // Restart the camera
         startTimer(); // Restart the timer
     });
 
-    // Start countdown function to reset timer and start counting
+    // Restart countdown timer
     function startTimer() {
         let countdownInterval = setInterval(function () {
             countdown--;
@@ -77,46 +92,81 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }, 1000);
     }
-});
 
-// Save Image Function (send to server)
-function saveImage(imageData) {
-    fetch("/save-image", { 
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image: imageData }) 
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.imageUrl && data.qrCode) {
-            alert("Image saved successfully!");
+    // Correct path to port.json
+    async function fetchPort(retryCount = 5, delay = 1000) {
+        const portJsonUrl = "port.json";  // Use relative path, it will be resolved from the public folder
 
-            // Hide buttons
-            document.getElementById("saveBtn").style.display = "none";
-            document.getElementById("retakeBtn").style.display = "none";
+        for (let attempt = 1; attempt <= retryCount; attempt++) {
+            try {
+                const response = await fetch(portJsonUrl);
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
-            // Show captured image (already visible)
-            let photo = document.getElementById("photo");
-            photo.style.display = "block";
+                const data = await response.json();
+                console.log("Fetched port:", data.port);
+                return data.port; // Return fetched port
 
-            // Show QR code
-            let qrContainer = document.createElement("div");
-            qrContainer.style.textAlign = "center";
-            qrContainer.style.marginTop = "20px";
+            } catch (error) {
+                console.error(`Attempt ${attempt}: Error fetching port:`, error);
 
-            let qrCodeImage = document.createElement("img");
-            qrCodeImage.src = data.qrCode;
-            qrCodeImage.alt = "QR Code to Download Image";
-            qrCodeImage.style.width = "200px";
-
-            qrContainer.appendChild(qrCodeImage);
-            document.body.appendChild(qrContainer);
+                if (attempt < retryCount) {
+                    await new Promise(resolve => setTimeout(resolve, delay)); // Retry after delay
+                } else {
+                    console.error("Max retries reached. Unable to fetch port.json.");
+                    return null;
+                }
+            }
         }
-    })
-    .catch(error => {
-        console.error("Error saving image:", error);
-        alert("Failed to save image. Please try again.");
-    });
-}
+    }
 
+    
+    // Save Image Function (send to server)
+    async function saveImage(imageData) {
+        fetchPort().then(port => {
+            fetch(`http://localhost:${port}/save-image`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ image: imageData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.imageUrl && data.qrCode) {
+                    alert("Image saved successfully!");
 
+                    // Hide Save and Retake buttons
+                    document.getElementById("saveBtn").style.display = "none";
+                    document.getElementById("retakeBtn").style.display = "none";
+
+                    // Show captured image
+                    let photo = document.getElementById("photo");
+                    photo.style.display = "block";
+
+                    // Create QR Code Section
+                    let qrContainer = document.createElement("div");
+                    qrContainer.style.textAlign = "center";
+                    qrContainer.style.marginTop = "20px";
+
+                    let qrCodeImage = document.createElement("img");
+                    qrCodeImage.src = data.qrCode;
+                    qrCodeImage.alt = "QR Code to Download Image";
+                    qrCodeImage.style.width = "200px";
+
+                    // Add text instruction
+                    let instruction = document.createElement("p");
+                    instruction.textContent = "Scan the QR Code to download your image!";
+                    instruction.style.fontSize = "16px";
+                    instruction.style.fontWeight = "bold";
+
+                    // Append elements
+                    qrContainer.appendChild(instruction);
+                    qrContainer.appendChild(qrCodeImage);
+                    document.body.appendChild(qrContainer);
+                }
+            })
+            .catch(error => {
+                console.error("Error saving image:", error);
+                alert("Failed to save image. Please try again.");
+            });
+        });
+    }
+});
