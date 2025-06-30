@@ -120,53 +120,47 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     
-    // Save Image Function (send to server)
-    async function saveImage(imageData) {
-        fetchPort().then(port => {
-            fetch(`http://localhost:${port}/save-image`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ image: imageData })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.imageUrl && data.qrCode) {
-                    alert("Image saved successfully!");
+// Replace fetchPort with fixed port
+const fixedPort = 3000;
 
-                    // Hide Save and Retake buttons
-                    document.getElementById("saveBtn").style.display = "none";
-                    document.getElementById("retakeBtn").style.display = "none";
+// Save Image Function (send to server)
+async function saveImage(imageData) {
+    fetch(`http://localhost:${fixedPort}/save-image`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: imageData })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.imageUrl && data.qrCode) {
+            alert("Image saved successfully!");
 
-                    // Show captured image
-                    let photo = document.getElementById("photo");
-                    photo.style.display = "block";
+            document.getElementById("saveBtn").style.display = "none";
+            document.getElementById("retakeBtn").style.display = "none";
 
-                    // Create QR Code Section
-                    let qrContainer = document.createElement("div");
-                    qrContainer.style.textAlign = "center";
-                    qrContainer.style.marginTop = "20px";
+            let qrContainer = document.createElement("div");
+            qrContainer.style.textAlign = "center";
+            qrContainer.style.marginTop = "20px";
 
-                    let qrCodeImage = document.createElement("img");
-                    qrCodeImage.src = data.qrCode;
-                    qrCodeImage.alt = "QR Code to Download Image";
-                    qrCodeImage.style.width = "200px";
+            let qrCodeImage = document.createElement("img");
+            qrCodeImage.src = data.qrCode;
+            qrCodeImage.alt = "QR Code to Download Image";
+            qrCodeImage.style.width = "300px";
 
-                    // Add text instruction
-                    let instruction = document.createElement("p");
-                    instruction.textContent = "Scan the QR Code to download your image!";
-                    instruction.style.fontSize = "16px";
-                    instruction.style.fontWeight = "bold";
+            let instruction = document.createElement("p");
+            instruction.textContent = "Scan the QR Code to download your image!";
+            instruction.style.fontSize = "30px";
+            instruction.style.color = "white";
+            instruction.style.fontWeight = "bold";
 
-                    // Append elements
-                    qrContainer.appendChild(instruction);
-                    qrContainer.appendChild(qrCodeImage);
-                    document.body.appendChild(qrContainer);
-                }
-            })
-            .catch(error => {
-                console.error("Error saving image:", error);
-                alert("Failed to save image. Please try again.");
-            });
-        });
-    }
+            qrContainer.appendChild(instruction);
+            qrContainer.appendChild(qrCodeImage);
+            document.body.appendChild(qrContainer);
+        }
+    })
+    .catch(error => {
+        console.error("Error saving image:", error);
+        alert("Failed to save image. Please try again.");
+    });
+}
 });

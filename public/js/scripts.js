@@ -1,5 +1,14 @@
 document.addEventListener("DOMContentLoaded", function () {
     loadGifts();
+    
+    // Listen for keyboard events
+    document.addEventListener("keydown", function (event) {
+        if (event.code === "Enter" || event.code === "Space") { // Press Enter or Space to start
+            if (!document.getElementById("startButton").disabled) {
+                startGame();
+            }
+        }
+    });
 });
 
 function loadGifts() {
@@ -39,13 +48,12 @@ function startGame() {
         index = (index + 1) % items.length;
         steps++;
         
-        // Increased speed by reducing interval time (from 100ms to 50ms)
         if (steps >= Math.floor(Math.random() * 50) + 30) {
             clearInterval(interval);
             let randomIndex = Math.floor(Math.random() * items.length);
             showPopup(items[randomIndex]);
         }
-    }, 10); // Faster rotation speed
+    }, 10);
 }
 
 function showPopup(selectedGift) {
@@ -59,6 +67,5 @@ function closePopup() {
     document.getElementById("popup").style.display = "none";
     document.getElementById("startButton").disabled = false;
     
-    // Redirect to the camera page
-    window.location.href = "camera.html";  // Ensure the path is correct and 'camera.html' is in place
+    window.location.href = "camera.html"; // Ensure 'camera.html' exists
 }

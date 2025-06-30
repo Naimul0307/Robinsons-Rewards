@@ -1,68 +1,88 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow } = require('electron');
 const path = require('path');
-const { exec } = require('child_process');
+const fs = require('fs');
 const os = require('os');
+const express = require('express');
+const QRCode = require('qrcode');
 
 let mainWindow;
+const port = 3000; // You can change this if needed
+
+function getLocalIP() {
+  const interfaces = os.networkInterfaces();
+  for (const name in interfaces) {
+    for (const iface of interfaces[name]) {
+      if (iface.family === 'IPv4' && !iface.internal) return iface.address;
+    }
+  }
+  return 'localhost';
+}
+
+const localIP = getLocalIP();
+
+function startServer() {
+  const serverApp = express();
+  serverApp.use(express.json({ limit: '10mb' }));
+  serverApp.use(express.static(path.join(__dirname, 'public')));
+
+  const captureDir = path.join(__dirname, 'public', 'image', 'capture');
+  if (!fs.existsSync(captureDir)) {
+    fs.mkdirSync(captureDir, { recursive: true });
+  }
+
+  serverApp.post('/save-image', async (req, res) => {
+    const { image } = req.body;
+    if (!image) return res.status(400).json({ error: 'No image data received' });
+
+    const base64Data = image.replace(/^data:image\/png;base64,/, '');
+    const fileName = `capture_${Date.now()}.png`;
+    const filePath = path.join(captureDir, fileName);
+    const imageUrl = `http://${localIP}:${port}/image/capture/${fileName}`;
+
+    fs.writeFile(filePath, base64Data, 'base64', async (err) => {
+      if (err) {
+        console.error('Error saving image:', err);
+        return res.status(500).json({ error: 'Failed to save the image' });
+      }
+
+      try {
+        const qrCodeData = await QRCode.toDataURL(imageUrl);
+        res.json({ message: 'Image saved', imageUrl, qrCode: qrCodeData });
+      } catch (qrError) {
+        console.error('QR Code Error:', qrError);
+        res.status(500).json({ error: 'QR code generation failed' });
+      }
+    });
+  });
+
+  serverApp.listen(port, () => {
+    console.log(`Server running at http://${localIP}:${port}`);
+  });
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
+    autoHideMenuBar: true,
     webPreferences: {
-      nodeIntegration: false, // Disable nodeIntegration for security
-      contextIsolation: true, // Use contextIsolation for better security
-      preload: path.join(__dirname, 'preload.js'), // Use a preload script
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js'),
     },
   });
+
   mainWindow.loadFile(path.join(__dirname, 'public', 'index.html'));
 }
 
-// Function to get local network IP
-function getLocalIP() {
-  const interfaces = os.networkInterfaces();
-  for (let interfaceName in interfaces) {
-    for (let iface of interfaces[interfaceName]) {
-      if (iface.family === 'IPv4' && !iface.internal) {
-        return iface.address;
-      }
-    }
-  }
-  return 'localhost'; // Fallback to localhost
-}
-
-const localIP = getLocalIP();
-const port = 3000; // Fixed port. Ensure server.js uses the same port.
-
-function startServer() {
-  exec('node server.js', (err, stdout, stderr) => {
-    if (err) {
-      console.error('Error starting server.js:', err);
-      return;
-    }
-    if (stderr) {
-      console.error('stderr:', stderr);
-    }
-    console.log(`Server running on http://${localIP}:${port}`);
-    console.log('stdout:', stdout);
-  });
-}
-
-// Start the server when Electron is ready
 app.whenReady().then(() => {
-  startServer(); // Start the server
-  createWindow(); // Create the Electron window
+  startServer();     // Start express server directly
+  createWindow();    // Create the window
 });
 
-// Handle window closing behavior
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
+  if (process.platform !== 'darwin') app.quit();
 });
 
 app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
-  }
+  if (BrowserWindow.getAllWindows().length === 0) createWindow();
 });
